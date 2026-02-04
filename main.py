@@ -26,6 +26,21 @@ tools = [
             "required": ["host"],
         },
     },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": "interact with the operating system using bash commands",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string",
+                    "description": "the bash command to execute",
+                }
+            },
+            "required": ["command"]
+        },
+    },
 ]
 
 
@@ -42,15 +57,34 @@ def ping(host=""):
         return f"error: {e}"
 
 
+def bash(command=""):
+    try:
+        result = subprocess.run(
+            ["bash", "-c", command],
+            text=True,
+            stderr=subprocess.STDOUT,
+            stdout=subprocess.PIPE,
+        )
+        return result.stdout
+    except Exception as e:
+        return f"error: {e}"
+
+
 def tool_call(item):
+    if item.name not in ["ping", "bash"]:
+        raise Exception(f'unhandled tool {item.name}')
+
     if item.name == "ping":
         print(f"[i cyan]tool call[/i cyan]: ping {json.loads(item.arguments)['host']}")
         result = ping(**json.loads(item.arguments))
-        return {
-            "type": "function_call_output",
-            "call_id": item.call_id,
-            "output": result,
-        }
+    elif item.name == "bash":
+        print(f"[i cyan]tool call[/i cyan]: bash {json.loads(item.arguments)['command']}")
+        result = bash(**json.loads(item.arguments))
+    return {
+        "type": "function_call_output",
+        "call_id": item.call_id,
+        "output": result,
+    }
 
 
 def handle_tools(response):
