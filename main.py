@@ -8,19 +8,31 @@ from rich import print
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-def get_response(user_prompt):
+context = []
+
+def get_response(context):
     with Live(Spinner("dots", text="asking openai..."), transient=True):
         return client.responses.create(
             model="gpt-5-mini",
-            instructions="",  # <- Give your agent personality
-            input=user_prompt,
+            instructions="You are an expert software developer. Be concise.",
+            input=context,
         )
 
 
 def get_prompt():
     user_prompt = prompt("> ")
-    bot_response = get_response(user_prompt)
+
+    if user_prompt == "/context":
+        print(context)
+        return
+
+    context.append({"role": "user", "content": user_prompt})
+
+    bot_response = get_response(context)
+
     print(bot_response.output_text)
+
+    context.append({"role": "assistant", "content": bot_response.output_text})
 
 
 def main():
