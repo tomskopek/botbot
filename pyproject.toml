@@ -1,0 +1,11 @@
+[project]
+name = "botbot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=2.16.0",
+    "prompt-toolkit>=3.0.52",
+    "rich>=14.3.2",
+]
